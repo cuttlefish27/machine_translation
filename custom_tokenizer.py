@@ -8,7 +8,7 @@ def split_sentence(text):
     word_list = text.split()
     return word_list
 
-def toCharacters(word):
+def to_characters(word):
     return list(word) + ['</w>']
 
 def normalize(corpus):
@@ -19,7 +19,7 @@ def normalize(corpus):
         words = split_sentence(sentence)
         sentence_list = []
         for word in words:
-            sentence_list.append(toCharacters(word))
+            sentence_list.append(to_characters(word))
 
         processed.append(sentence_list)
 
@@ -86,7 +86,7 @@ def apply_merge(word_freq, max_pair):
         new_freq[tuple(new_word)] = word_freq[word]
     return new_freq
 
-def bytePairEncoding(corpus, MAX_MERGES):
+def byte_pair_encoding(corpus, MAX_MERGES):
     merge_rules = []
 
     corpus = normalize(corpus)
@@ -106,7 +106,7 @@ def bytePairEncoding(corpus, MAX_MERGES):
 
     return word_freq, merge_rules, vocab
 
-def generateVocabDictionary(vocab):
+def generate_vocab_dictionary(vocab):
     vocab_dict = dict()
     vocab_dict["<PAD>"] = 0
     vocab_dict["<BOS>"] = 1
@@ -117,13 +117,13 @@ def generateVocabDictionary(vocab):
 
     return vocab_dict
 
-def tokenizeSentence(sentence: str, merge_rules):
+def tokenize_sentence(sentence: str, merge_rules):
     sentence = normalize_text(sentence)
     sentence = split_sentence(sentence)
 
     sentence_list = []
     for word in sentence:
-        word = toCharacters(word)
+        word = to_characters(word)
         sentence_list.append(word)
     
     for merge in merge_rules:
