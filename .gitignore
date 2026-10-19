@@ -1,2 +1,4 @@
 .DS_Store
 spa-eng/
+__pycache__/
+best_model_weights.pt

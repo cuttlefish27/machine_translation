@@ -40,10 +40,12 @@ def corpus_to_word_frequency(corpus):
 
 def generate_initial_vocab(word_freq):
     vocab = []
+    seen = set()
     for word in word_freq:
         for character in word:
-            if character not in vocab:
+            if character not in seen:
                 vocab.append(character)
+                seen.add(character)
     return vocab
 
 def count_pairs(word_freq):
@@ -79,11 +81,14 @@ def merge_word (word, merge_pair):
         i += 1
     return new_word
 
+
 def apply_merge(word_freq, max_pair):
-    new_freq = dict()
-    for word in word_freq:
-        new_word = merge_word(word, max_pair)
-        new_freq[tuple(new_word)] = word_freq[word]
+    new_freq = {}
+
+    for word, freq in word_freq.items():
+        new_word = tuple(merge_word(word, max_pair))
+        new_freq[new_word] = new_freq.get(new_word, 0) + freq
+
     return new_freq
 
 def byte_pair_encoding(corpus, MAX_MERGES):
@@ -106,32 +111,44 @@ def byte_pair_encoding(corpus, MAX_MERGES):
 
     return word_freq, merge_rules, vocab
 
-def generate_vocab_dictionary(vocab):
-    vocab_dict = dict()
-    vocab_dict["<PAD>"] = 0
-    vocab_dict["<BOS>"] = 1
-    vocab_dict["<EOS>"] = 2
-    vocab_dict["<UNK>"] = 3
 
-    vocab_dict.update({word: idx +4  for idx, word in enumerate(vocab)})
+def generate_vocab_dictionary(vocab):
+    vocab_dict = {
+        "<PAD>": 0,
+        "<BOS>": 1,
+        "<EOS>": 2,
+        "<UNK>": 3
+    }
+
+    for token in vocab:
+        if token not in vocab_dict:
+            vocab_dict[token] = len(vocab_dict)
 
     return vocab_dict
 
-def tokenize_sentence(sentence: str, merge_rules):
-    sentence = normalize_text(sentence)
-    sentence = split_sentence(sentence)
-
-    sentence_list = []
-    for word in sentence:
-        word = to_characters(word)
-        sentence_list.append(word)
-    
+def tokenize_word(word, merge_rules):
+    word = to_characters(word)
     for merge in merge_rules:
-        for i in range(len(sentence_list)):
-            sentence_list[i] = merge_word(sentence_list[i], merge)
-    
-    tokens = [token for word in sentence_list for token in word]
-    return tokens
+        word = merge_word(word, merge)
+    return word
+
+
+def tokenize_corpus(corpus, merge_rules):
+    cache = {}
+    tokenized_corpus =[]
+
+    for sentence in corpus:
+        sentence = normalize_text(sentence)
+        words = split_sentence(sentence)
+        tokens = []
+        for word in words:
+            if word not in cache:
+                cache[word] = tokenize_word(word, merge_rules)
+
+            tokens.extend(cache[word])
+
+        tokenized_corpus.append(tokens)
+    return tokenized_corpus
 
 def encode(tokens, vocab):
     encoded = [vocab["<BOS>"]]
@@ -147,22 +164,17 @@ def encode(tokens, vocab):
 def decode(encoded, vocab):
     id_to_vocab = {id: token for token, id in vocab.items()}
     tokens = []
-    for num in encoded:
-        if num in vocab.values():
-            tokens.append(id_to_vocab[num])
-        else:
-            tokens.append("<UNK>")
-    
     decoded = ""
-    for token in tokens:
+    for num in encoded:
+        token = id_to_vocab.get(num, "<UNK>")
+        
         if token in ("<BOS>","<EOS>","<PAD>"):
             continue
-        elif token == "</w>":
-            decoded += " "
+        elif token.endswith("</w>"):
+            decoded += (token[:-len("</w>")] + " ")
         elif token == "<UNK>":
             decoded += " <unk> "
         else:
             decoded += token
 
-    decoded.strip()
-    return decoded
+    return "".join(decoded).strip()
