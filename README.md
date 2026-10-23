@@ -1,0 +1,1 @@
+This repository contains my code on creating a transformer for machine translation. I use the pytorch library to implement my own version for each part of the transformer, from the attention blocks to the embedding. I have also implemented a tokenizer following a character-level BPE algorithm. The goal is to translate between english text and spanish text.
