@@ -58,7 +58,7 @@ The training and inference workflows are still under development, and the reposi
 
 ```text
 machine_translation/
-├── tokenizers/              # Tokenizer-related files
+├── tokenizers/              # Saved tokenizer dictionaries
 ├── custom_tokenizer.py      # Custom BPE tokenizer implementation
 ├── machine_translation.ipynb # Transformer implementation and experiments
 ├── tokenizer_test.ipynb     # Tokenizer testing and experiments
